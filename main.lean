@@ -1,9 +1,20 @@
-
 inductive Vec (A:Type): Nat -> Type
 | nil : Vec A 0
 | cons: A -> Vec A n -> Vec A (n+1)
 
 
+def Vec.append {A : Type} {m n : Nat} : Vec A m → Vec A n → Vec A (m + n)
+| .nil, ys => by
+  rw [Nat.zero_add]
+  exact ys
+| .cons x xs, ys => by
+  rw [Nat.succ_add]
+  exact .cons x (append xs ys)
+
+
+
+instance {A : Type} {m n : Nat} : HAppend (Vec A m) (Vec A n) (Vec A (m + n)) where
+  hAppend := Vec.append
 
 
 def Vec.toList: Vec A n -> List A
@@ -51,21 +62,15 @@ def NestedList : Nat -> Type
 def h : 1 == 1 := rfl
 
 
-
-
-
+def Tensor.append : (X:Tensor shp) ->
 
 def Tensor.fromList : (n:Nat) -> NestedList n -> (shape: Shape n) × Tensor shape
 | 0, l => .mk Vec.nil $ Tensor.item l
 
--- | 1, [] => Sigma.mk (.cons 0 .nil) $ Tensor.empty
-
 | n+1, l => match (l : List $ NestedList n) with
   | [] =>
     let p : NestedList (n+1) := []
-    let shp : Shape $ n + 1 := .zeros $ n + 1
-
-
+    let shp : Shape $ n + 1 := .zeros $ n +
     sorry
 
   | x::xs => sorry
