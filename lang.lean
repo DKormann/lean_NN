@@ -9,6 +9,7 @@ def List.pop : (axis:Nat) -> (shp:List Nat) -> (List Nat)
 inductive ZOp : Type
 | rand
 | full : (x:Nat) -> ZOp
+| const : (raw: List Nat) -> ZOp
 
 inductive UOp : Type
 | inv | exp
@@ -33,10 +34,37 @@ inductive Tensor : (shp: List Nat) -> Type
   | reduce : (op:ReduceOp) -> (axis:Nat) -> (x:Tensor shp) -> Tensor (shp.pop axis)
   | reshape : (view : View) -> (x:Tensor shp) -> Tensor (view.apply shp)
 
+
 def Tensor.zeros (shp:List Nat) := Tensor.base (ZOp.full 0) shp
 def Tensor.ones (shp:List Nat) := Tensor.base (ZOp.full 1) shp
 def Tensor.sum (axis:Nat) (x:Tensor shp) := Tensor.reduce .sum axis x
 
-def x := Tensor.ones [3,2]
+def Tensor.fromList (list:List Nat) := Tensor.base (ZOp.const list) [list.length]
 
-def y : Tensor [3] := Tensor.sum 0 x
+
+def l : Tensor [3] := Tensor.fromList [1,2,3]
+def x := Tensor.ones [3,2]
+def y : Tensor [2] := Tensor.sum 0 x
+
+
+def BinOp.compile : BinOp -> String | .add => "add" | .sub => "sub" | .mul => "mul" | .div => "div"
+def ReduceOp.compile : ReduceOp -> String | .sum => "sum" | .prod => "prod" | .mean => "mean" | .max => "max" | .min => "min"
+
+def Tensor.compile : Tensor shp -> String
+
+| Tensor.base op shp => match op with
+  | ZOp.full x => "Tensor.full(" ++ toString x ++ ", " ++ shp.toString ++ ")"
+  | ZOp.rand => "Tensor.rand(" ++ shp.toString ++ ")"
+  | ZOp.const raw => "Tensor(" ++ raw.toString ++ ")"
+
+| Tensor.unary op x => match op with
+  | UOp.inv => "Tensor.inv(" ++ x.compile ++ ")"
+  | UOp.exp => "Tensor.exp(" ++ x.compile ++ ")"
+
+| Tensor.binary op x y => "Tensor." ++ op.compile ++ "(" ++ x.compile ++ ", " ++ y.compile ++ ")"
+| Tensor.reduce op axis x => "Tensor." ++ op.compile ++ "(" ++ toString axis ++ ", " ++ x.compile ++ ")"
+| Tensor.reshape view x => match view with
+  | View.permute axes => "Tensor.permute(" ++ axes.toString ++ ", " ++ x.compile ++ ")"
+
+
+#eval y.compile
