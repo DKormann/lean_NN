@@ -11,11 +11,8 @@ def Vec.append {A : Type} {m n : Nat} : Vec A m → Vec A n → Vec A (m + n)
   rw [Nat.succ_add]
   exact .cons x (append xs ys)
 
-
-
 instance {A : Type} {m n : Nat} : HAppend (Vec A m) (Vec A n) (Vec A (m + n)) where
   hAppend := Vec.append
-
 
 def Vec.toList: Vec A n -> List A
 | nil => []
@@ -41,14 +38,23 @@ instance[ToString A] : ToString (Vec A n)  where
 def Shape := Vec Nat
 
 
-inductive Tens : Type
-| nil : Tens
-| cons : Vec Tens n -> Tens
-
 inductive Tensor : Shape dim -> Type
 | item : Nat -> Tensor .nil
 | empty : (shp:Shape n) -> Tensor (.cons 0 shp)
 | stacked : Tensor shp -> Tensor (.cons n shp) -> Tensor (.cons (n+1) shp)
+
+
+
+def Vec.prod : Vec Nat n -> Nat
+| .nil => 1
+| .cons x xs => x * Vec.prod xs
+
+
+inductive TT : Shape dim -> Type
+| cont : (shp:Shape n) -> Vec Nat (shp.prod) -> TT shp
+
+def TT.data : (t : TT shp) -> Vec Nat (shp.prod)
+| .cont _ d => d
 
 
 
@@ -59,22 +65,88 @@ def NestedList : Nat -> Type
 
 
 
-def h : 1 == 1 := rfl
+
+theorem Vec.prod_add : (n:Nat) -> (shp:Shape n) -> Vec.prod (Vec.cons (n+1) shp) = (Vec.cons n shp).prod + shp.prod :=
+by
+intro n
+intro shp
+rw [Vec.prod]
+rw [Nat.succ_mul]
+rw [Vec.prod]
+done
 
 
-def Tensor.append : (X:Tensor shp) ->
+def TT.cons (x: TT shp) (X : TT $ .cons k shp): TT $ .cons (k+1) shp :=
+  by
+  let newshp := Vec.cons (k + 1) shp
+  let dat :Vec Nat ((Vec.cons k shp).prod + shp.prod) := X.data ++ x.data
 
-def Tensor.fromList : (n:Nat) -> NestedList n -> (shape: Shape n) × Tensor shape
-| 0, l => .mk Vec.nil $ Tensor.item l
+  -- Prove that the length of dat matches newshp.prod
+  have len_eq : (Vec.cons k shp).prod + shp.prod = newshp.prod := by
+    rw [← Vec.prod_add]
 
-| n+1, l => match (l : List $ NestedList n) with
-  | [] =>
-    let p : NestedList (n+1) := []
-    let shp : Shape $ n + 1 := .zeros $ n +
+  -- Use the proof to construct the tensor
+  exact TT.cont newshp dat
+
+
+
+
+
+def TT.fromList : (n:Nat) -> NestedList n -> (shp: Shape n) × (TT shp)
+
+
+  | 0, n => .mk .nil $ .cont .nil $ .cons n .nil
+
+  | p+1, n =>
+
+    let rec fn (l: NestedList (p+1)): List ((shp:Shape p) × (TT shp))
+    := match l with
+    | [] => []
+    | x::xs =>
+      let a := TT.fromList p x
+      let b := (fn xs)
+      a::b
+
+
     sorry
 
-  | x::xs => sorry
+  -- | p+1, x::xs =>
 
+  -- match p with
+  -- | 0 => sorry
+
+
+  -- let a := TT.fromList p x
+  -- let b := TT.fromList (p+1) xs
+
+  -- sorry
+
+
+
+
+
+  -- let loop
+
+  -- | p+1, l =>
+
+  -- let loop
+
+  -- match l with
+  --   | [] => sorry
+  --   | x::xs =>
+
+
+
+
+  --   let b := TT.fromList (p) x
+
+  --   sorry
+
+  -- -- let loop : (shp:Shape p) -> NestedList p -> (shp: Shape n) × (TT shp)
+
+
+
+  -- sorry
 
 
 
