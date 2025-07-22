@@ -1,2 +1,2 @@
 from tinygrad import Tensor
-print(Tensor.full([2, 2], 1).tolist())
+print(Tensor.add(Tensor.full([2, 2], 1), Tensor.full([2, 2], 1)).tolist())

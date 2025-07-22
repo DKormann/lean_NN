@@ -36,8 +36,8 @@ inductive Tensor : (shp: List Nat) -> Type
 def Tensor.zeros (shp:List Nat) := Tensor.base (ZOp.full 0) shp
 def Tensor.ones (shp:List Nat) := Tensor.base (ZOp.full 1) shp
 def Tensor.sum (axis:Nat) (x:Tensor shp) := Tensor.reduce .sum axis x
-
 def Tensor.fromList (list:List Nat) := Tensor.base (ZOp.const list) [list.length]
+def Tensor.add (x:Tensor shp) (y:Tensor shp) := Tensor.binary .add x y
 
 
 def l : Tensor [3] := Tensor.fromList [1,2,3]
