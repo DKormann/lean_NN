@@ -1,5 +1,3 @@
-
-
 def List.pop : (axis:Nat) -> (shp:List Nat) -> (List Nat)
 | _ , [] => []
 | 0, _::xs => xs
@@ -53,7 +51,7 @@ def ReduceOp.compile : ReduceOp -> String | .sum => "sum" | .prod => "prod" | .m
 def Tensor.compile : Tensor shp -> String
 
 | Tensor.base op shp => match op with
-  | ZOp.full x => "Tensor.full(" ++ toString x ++ ", " ++ shp.toString ++ ")"
+  | ZOp.full x => "Tensor.full(" ++ toString shp ++ ", " ++ toString x ++ ")"
   | ZOp.rand => "Tensor.rand(" ++ shp.toString ++ ")"
   | ZOp.const raw => "Tensor(" ++ raw.toString ++ ")"
 
@@ -65,6 +63,3 @@ def Tensor.compile : Tensor shp -> String
 | Tensor.reduce op axis x => "Tensor." ++ op.compile ++ "(" ++ toString axis ++ ", " ++ x.compile ++ ")"
 | Tensor.reshape view x => match view with
   | View.permute axes => "Tensor.permute(" ++ axes.toString ++ ", " ++ x.compile ++ ")"
-
-
-#eval y.compile
